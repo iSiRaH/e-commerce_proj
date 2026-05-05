@@ -1,5 +1,3 @@
-import Button from "@mui/material/Button"
-import { TiThMenuOutline } from "react-icons/ti";
 import { RiHome3Line } from "react-icons/ri";
 import { AiOutlineShop } from "react-icons/ai";
 import { GiCircuitry } from "react-icons/gi";
@@ -13,6 +11,7 @@ import { PiMicrophoneStageLight } from "react-icons/pi";
 
 
 import { Link } from "react-router-dom";
+import AllCategory from "../AllCategory";
 
 
 
@@ -22,10 +21,7 @@ const Navigation = () => {
             <div className="container">
                 <div className="row">
                     <div className="col-sm-3 navPart1">
-                        <Button className="allCatTab">
-                            <span class="text">ALL CATEGORIES</span>  
-                            <span className="icon1"><TiThMenuOutline /></span>                       
-                        </Button>
+                        <AllCategory />
                     </div>
 
                     <div className="col-sm-9 navPart2 d-flex align-items-center">

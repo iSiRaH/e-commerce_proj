@@ -412,3 +412,40 @@ nav .navPart2 ul li a svg{
 .locationModal .closeCountryList svg{
     font-size: 22px;
 }
+
+.wrapper { 
+    position: relative; 
+    display: inline-block; 
+}
+.dropdown { 
+    position: absolute; 
+    top: 100%; 
+    left: 0; 
+    opacity: 0; pointer-events: none; transition: opacity 0.18s, transform 0.18s; }
+.wrapper:hover .dropdown { opacity: 1; pointer-events: all; }
+
+.wrapper .dropdown li{
+    padding: auto;
+    margin: 10px;
+    width: 100%;
+    list-style: none;
+}
+
+.wrapper .dropdown li{
+    background: #dfc3ee; padding: 8px 20px !important;
+    margin: 5px;
+    border-radius: 30px !important;
+    width: 100%;
+    text-transform: capitalize !important;
+    color: #000 !important;
+    justify-content: flex-start !important;
+    padding: 10px 20px !important;
+}
+.wrapper .dropdown li:hover{
+    color: #ee4cc8;
+    background: #dbbafc;
+}
+
+wrapper .dropdown li a {
+    color: #000 !important;
+}
