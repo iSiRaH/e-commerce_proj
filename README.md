@@ -1,18 +1,81 @@
-# React + Vite
+# E-Commerce Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern full-stack E-Commerce web application built using React, Vite, Tailwind CSS, Node.js, Express.js, and MySQL/MongoDB.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+# Features
 
-## React Compiler
+## User Features
+- User registration and login
+- JWT authentication
+- Product search and filtering
+- Product categories
+- Add to cart
+- Checkout system
+- Order management
+- User profile management
+- Responsive modern UI
+- Dark/light modern design
+- Product reviews and ratings
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Admin Features
+- Admin dashboard
+- Add/Edit/Delete products
+- Manage categories
+- Manage users
+- Manage orders
+- Sales analytics
+- Inventory management
 
-Note: This will impact Vite dev & build performances.
+---
 
-## Expanding the ESLint configuration
+# Technologies Used
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Frontend
+- React.js
+- Vite
+- Tailwind CSS
+- React Router DOM
+- Axios
+- Redux Toolkit / Context API
+
+## Backend
+- Node.js
+- Express.js
+
+## Database
+- MySQL / MongoDB
+
+## Authentication
+- JWT Authentication
+- bcrypt password hashing
+
+---
+
+# Project Structure
+
+```bash
+e-commerce/
+|
+---├── src/
+   │   ├── components/
+   │   ├── pages/
+   │   ├── layouts/
+   │   ├── redux/
+   │   ├── services/
+   │   ├── assets/
+   │   ├── App.jsx
+   │   └── main.jsx
+   │
+   ├── public/
+   └── package.json
+
+---
+
+### Installation
+
+git clone https://github.com/your-username/e-commerce.git
+cd e-commerce
+npm install
+npm run dev
