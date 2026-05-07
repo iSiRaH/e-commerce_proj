@@ -45,7 +45,7 @@ A modern full-stack E-Commerce web application built using React, Vite, Tailwind
 - Express.js
 
 ## Database
-- MySQL / MongoDB
+- PostgreSQL
 
 ## Authentication
 - JWT Authentication
@@ -75,7 +75,7 @@ e-commerce/
 
 ### Installation
 
-git clone https://github.com/your-username/e-commerce.git
-cd e-commerce
-npm install
-npm run dev
+ git clone https://github.com/your-username/e-commerce.git
+ cd e-commerce
+ npm install
+ npm run dev
