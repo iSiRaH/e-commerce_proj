@@ -57,19 +57,21 @@ A modern full-stack E-Commerce web application built using React, Vite, Tailwind
 
 ```bash
 e-commerce/
-|
----├── src/
-   │   ├── components/
-   │   ├── pages/
-   │   ├── layouts/
-   │   ├── redux/
-   │   ├── services/
-   │   ├── assets/
-   │   ├── App.jsx
-   │   └── main.jsx
-   │
-   ├── public/
-   └── package.json
+│
+├── apps/
+│   ├── web/              # React frontend
+│   ├── api/              # Node.js + Express backend
+│   └── mobile/           # Future React Native / Expo app
+│
+├── packages/
+│   ├── ui/               # Shared UI components
+│   ├── types/            # Shared types/schemas
+│   ├── utils/            # Shared utility functions
+│   └── config/           # Shared configs
+│
+├── package.json
+├── turbo.json / nx.json
+└── README.md
 
 ---
 
@@ -77,5 +79,5 @@ e-commerce/
 
  git clone https://github.com/your-username/e-commerce.git
  cd e-commerce
- npm install
- npm run dev
+ pnpm install
+ pnpm  dev
