@@ -20,8 +20,9 @@
       "onFail": "download"
     }
   },
-  "type": "module",
+  "type": "commonjs",
   "devDependencies": {
+    "prettier": "^3.8.3",
     "turbo": "^2.9.9"
   }
 }
