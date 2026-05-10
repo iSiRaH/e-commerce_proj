@@ -13,13 +13,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.0.8",
-      "onFail": "download"
-    }
-  },
   "type": "commonjs",
   "devDependencies": {
     "prettier": "^3.8.3",

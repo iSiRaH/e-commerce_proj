@@ -3,6 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 const healthCheckRouter = require('./routes/healthCheck');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -22,5 +23,6 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use('/api/v1/health', healthCheckRouter);
+app.use('/api/v1/auth', authRoutes);
 
 module.exports = app;
