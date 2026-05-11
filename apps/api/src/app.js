@@ -4,6 +4,7 @@ const morgan = require('morgan');
 
 const healthCheckRouter = require('./routes/healthCheck');
 const authRoutes = require('./routes/authRoutes');
+const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 
@@ -24,5 +25,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/v1/health', healthCheckRouter);
 app.use('/api/v1/auth', authRoutes);
+
+app.use(globalErrorHandler);
 
 module.exports = app;
