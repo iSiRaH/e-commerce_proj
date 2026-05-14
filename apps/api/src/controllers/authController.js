@@ -93,3 +93,60 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+exports.logout = catchAsync(async (req, res, next) => {
+  res.clearCookie('jwt', {
+    httpOnly: true,
+  });
+  // res.cookie('jwt', 'loggedout', {
+  //   expires: new Date(Date.now() + 10 * 1000),
+  //   httpOnly: true,
+  // });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Logged out successfully',
+  });
+});
+
+exports.getMe = catchAsync(async (req, res, next) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined!',
+  });
+});
+
+exports.updateMe = catchAsync(async (req, res, next) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined!',
+  });
+});
+
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined!',
+  });
+});
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined!',
+  });
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined!',
+  });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined!',
+  });
+});

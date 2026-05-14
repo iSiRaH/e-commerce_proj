@@ -1,0 +1,19 @@
+model Product {
+    id          Int      @id @default(autoincrement())
+    name        String
+    slug        String   @unique
+    description String?
+    price       Float
+    discount    Float?
+    brand       String?
+    category    String?
+    sku         String?  @unique
+    stockQty    Int?
+    weight      Float?
+    thumbnail   String?
+    isActive    Boolean  @default(true)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    orders      Order[]
+    carts       Cart[]
+}
