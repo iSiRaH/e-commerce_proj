@@ -2,6 +2,7 @@ const catchAsync = require('../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 const authServices = require('../services/authServices');
 const { promisify } = require('util');
+const prisma = require('../config/connectDb');
 const AppError = require('../utils/appError');
 
 const signToken = (id) =>
@@ -41,7 +42,7 @@ exports.register = catchAsync(async (req, res, next) => {
 });
 
 // LOGIN
-exports.login = catchAsync(async (req, res) => {
+exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -51,6 +52,7 @@ exports.login = catchAsync(async (req, res) => {
   const user = await authServices.validateUser(email, password);
 
   if (!user) {
+    //FIX: next is not defined error in this
     return next(new AppError('Incorrect email or password', 401));
   }
 
@@ -109,24 +111,96 @@ exports.logout = catchAsync(async (req, res, next) => {
   });
 });
 
+const safeFields = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  address: true,
+  phone: true,
+  avatar: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLogin: true,
+};
+
 exports.getMe = catchAsync(async (req, res, next) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+  if (!req.user || req.user.id === undefined || req.user.id === null) {
+    return next(new AppError('You are not logged in! Please log in.', 401));
+  }
+
+  const userId = Number(req.user.id);
+
+  if (Number.isNaN(userId)) {
+    return next(new AppError('Invalid user ID.', 400));
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: safeFields,
+  });
+
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user,
+    },
   });
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+  if (!req.user || req.user.id === undefined || req.user.id === null) {
+    return next(new AppError('You are not logged in! Please log in.', 401));
+  }
+
+  const userId = Number(req.user.id);
+
+  if (Number.isNaN(userId)) {
+    return next(new AppError('Invalid user ID.', 400));
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: req.body,
+    select: safeFields,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser,
+    },
   });
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+  if (!req.user || req.user.id === undefined || req.user.id === null) {
+    return next(new AppError('You are not logged in! Please log in.', 401));
+  }
+
+  const userId = Number(req.user.id);
+
+  if (Number.isNaN(userId)) {
+    return next(new AppError('Invalid user ID.', 400));
+  }
+
+  const deletedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: { isActive: 'INACTIVE' },
+  });
+
+  res.status(204).json({
+    status: 'success',
+    data: null,
   });
 });
 
