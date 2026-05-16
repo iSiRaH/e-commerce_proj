@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Menu,
   User,
@@ -11,8 +12,206 @@ import logo from "../../public/images/logo.png";
 import siteName from "../../public/images/SiteName.png";
 
 const Home = () => {
-  const todayDeals = Array(8).fill(0);
-  const trendingDeals = Array(8).fill(0);
+  const [showCategories, setShowCategories] = useState(false);
+  // Sample products for Today Deals
+  const todayDeals = [
+    {
+      id: 1,
+      name: "Premium Wireless Headphones",
+      price: 129.99,
+      originalPrice: 169.99,
+      discount: 25,
+      rating: 4.8,
+      reviews: 324,
+      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: true,
+      isNew: true,
+    },
+    {
+      id: 2,
+      name: "Smart Watch Pro",
+      price: 199.99,
+      originalPrice: 299.99,
+      discount: 33,
+      rating: 4.6,
+      reviews: 156,
+      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: true,
+    },
+    {
+      id: 3,
+      name: "Ultra HD Camera",
+      price: 799.99,
+      originalPrice: 999.99,
+      discount: 20,
+      rating: 4.9,
+      reviews: 489,
+      image: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: true,
+      isNew: false,
+    },
+    {
+      id: 4,
+      name: "Portable Speaker",
+      price: 79.99,
+      originalPrice: 129.99,
+      discount: 38,
+      rating: 4.5,
+      reviews: 234,
+      image: "https://images.unsplash.com/photo-1589003077984-894e133814c9?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: false,
+    },
+    {
+      id: 5,
+      name: "Wireless Earbuds",
+      price: 89.99,
+      originalPrice: 149.99,
+      discount: 40,
+      rating: 4.7,
+      reviews: 567,
+      image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: true,
+      isNew: true,
+    },
+    {
+      id: 6,
+      name: "Phone Tripod",
+      price: 29.99,
+      originalPrice: 49.99,
+      discount: 40,
+      rating: 4.4,
+      reviews: 123,
+      image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: false,
+    },
+    {
+      id: 7,
+      name: "USB-C Hub",
+      price: 49.99,
+      originalPrice: 79.99,
+      discount: 37,
+      rating: 4.6,
+      reviews: 345,
+      image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: true,
+    },
+    {
+      id: 8,
+      name: "Phone Stand",
+      price: 19.99,
+      originalPrice: 34.99,
+      discount: 43,
+      rating: 4.3,
+      reviews: 89,
+      image: "https://images.unsplash.com/photo-1563394566578-f8fae67fa0fb?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: false,
+    },
+  ];
+
+  // Sample products for Trending Deals
+  const trendingDeals = [
+    {
+      id: 9,
+      name: "Mechanical Keyboard",
+      price: 149.99,
+      originalPrice: 199.99,
+      discount: 25,
+      rating: 4.8,
+      reviews: 421,
+      image: "https://images.unsplash.com/photo-1587829191301-dc798b83add3?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: true,
+      isNew: true,
+    },
+    {
+      id: 10,
+      name: "Gaming Mouse",
+      price: 59.99,
+      originalPrice: 99.99,
+      discount: 40,
+      rating: 4.7,
+      reviews: 312,
+      image: "https://images.unsplash.com/photo-1527814050087-3793815479db?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: false,
+    },
+    {
+      id: 11,
+      name: "Monitor Stand",
+      price: 89.99,
+      originalPrice: 139.99,
+      discount: 36,
+      rating: 4.5,
+      reviews: 198,
+      image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: true,
+    },
+    {
+      id: 12,
+      name: "Desk Lamp",
+      price: 45.99,
+      originalPrice: 79.99,
+      discount: 42,
+      rating: 4.6,
+      reviews: 267,
+      image: "https://images.unsplash.com/photo-1565636192335-14c01e2335d6?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: false,
+    },
+    {
+      id: 13,
+      name: "Phone Case",
+      price: 24.99,
+      originalPrice: 49.99,
+      discount: 50,
+      rating: 4.4,
+      reviews: 534,
+      image: "https://images.unsplash.com/photo-1606933248051-5ce42bebce85?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: true,
+      isNew: false,
+    },
+    {
+      id: 14,
+      name: "Screen Protector",
+      price: 14.99,
+      originalPrice: 29.99,
+      discount: 50,
+      rating: 4.5,
+      reviews: 678,
+      image: "https://images.unsplash.com/photo-1600163509057-ba94a3db4b18?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: true,
+    },
+    {
+      id: 15,
+      name: "Cable Organizer",
+      price: 12.99,
+      originalPrice: 24.99,
+      discount: 48,
+      rating: 4.3,
+      reviews: 145,
+      image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: false,
+      isNew: false,
+    },
+    {
+      id: 16,
+      name: "Webcam",
+      price: 99.99,
+      originalPrice: 159.99,
+      discount: 37,
+      rating: 4.7,
+      reviews: 289,
+      image: "https://images.unsplash.com/photo-1587826922334-403e5d63b672?q=80&w=1200&auto=format&fit=crop",
+      isBestseller: true,
+      isNew: true,
+    },
+  ];
 
   return (
     <div className="bg-[#f7f4ea] min-h-screen w-full overflow-x-hidden">
@@ -89,23 +288,43 @@ const Home = () => {
       <div className="px-4 md:px-8 lg:px-16">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Category Sidebar */}
-          <div className="w-full lg:w-[250px]">
+          <div 
+            className="w-full lg:w-[250px]"
+            onMouseEnter={() => setShowCategories(true)}
+            onMouseLeave={() => setShowCategories(false)}
+          >
             {/* Menu Button */}
-            <div className="bg-[#ebd9d1] rounded-full px-5 py-3 flex justify-end mb-4">
-              <Menu size={24} />
+            <div
+              className="bg-[#ebd9d1] rounded-full px-4 py-2 flex items-center justify-between mb-4 cursor-pointer shadow-sm hover:shadow-md transition-all"
+              onClick={() => setShowCategories(!showCategories)}
+            >
+              <div className="flex items-center gap-3">
+                <Menu size={20} />
+                <span className="font-semibold text-sm md:text-base text-black">
+                  All Categories
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-700 bg-white/60 px-3 py-1 rounded-full">
+                  {showCategories ? "Hide" : "Show"}
+                </span>
+              </div>
             </div>
 
             {/* Categories */}
-            <div className="flex flex-col gap-2">
-              <Frame text="CatItem1" />
-              <Frame text="CatItem2" />
-              <Frame text="CatItem3" />
-              <Frame text="CatItem4" />
-              <Frame text="CatItem5" />
-              <Frame text="CatItem6" />
-              <Frame text="CatItem7" />
-              <Frame text="CatItem8" />
-            </div>
+            {showCategories && (
+              <div className="flex flex-col gap-2 bg-white p-3 rounded-lg shadow-md border border-black/10 mt-2">
+                <Frame text="CatItem1" isCategory={true} />
+                <Frame text="CatItem2" isCategory={true} />
+                <Frame text="CatItem3" isCategory={true} />
+                <Frame text="CatItem4" isCategory={true} />
+                <Frame text="CatItem5" isCategory={true} />
+                <Frame text="CatItem6" isCategory={true} />
+                <Frame text="CatItem7" isCategory={true} />
+                <Frame text="CatItem8" isCategory={true} />
+              </div>
+            )}
           </div>
 
           {/* Main Content */}
@@ -134,11 +353,10 @@ const Home = () => {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-4">
-                {todayDeals.map((_, index) => (
-                  <div
-                    key={index}
-                    className="aspect-square bg-[#d9d9d9] rounded-md"
-                  ></div>
+                {todayDeals.map((product) => (
+                  <div key={product.id}>
+                    <Frame product={product} />
+                  </div>
                 ))}
               </div>
             </div>
@@ -152,11 +370,10 @@ const Home = () => {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-4">
-                {trendingDeals.map((_, index) => (
-                  <div
-                    key={index}
-                    className="aspect-square bg-[#d9d9d9] rounded-md"
-                  ></div>
+                {trendingDeals.map((product) => (
+                  <div key={product.id}>
+                    <Frame product={product} />
+                  </div>
                 ))}
               </div>
             </div>

@@ -10,10 +10,11 @@ import {
 import { motion } from "framer-motion";
 import { useState } from "react";
 
-export default function ProductCard() {
+export default function ProductCard({ text, product: customProduct, isCategory = false }) {
   const [wishlist, setWishlist] = useState(false);
 
-  const product = {
+  // Default product data
+  const defaultProduct = {
     id: 1,
     name: "Premium Wireless Headphones",
     price: 129.99,
@@ -26,6 +27,17 @@ export default function ProductCard() {
     isBestseller: true,
     isNew: true,
   };
+
+  const product = customProduct || defaultProduct;
+
+  // Render category frame
+  if (isCategory) {
+    return (
+      <div className="rounded-lg bg-[#ebd9d1] px-4 py-3 text-center font-semibold text-gray-800 shadow-md hover:shadow-lg transition cursor-pointer">
+        {text}
+      </div>
+    );
+  }
 
   return (
     <motion.div
