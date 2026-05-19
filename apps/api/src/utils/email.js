@@ -11,7 +11,7 @@ const sendmail = async (options) => {
   });
 
   const mailOptions = {
-    from: 'Ecommerce Application <no-reply@ecommerce.com>',
+    from: `Ecommerce Application <${process.env.EMAIL_USERNAME}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,
