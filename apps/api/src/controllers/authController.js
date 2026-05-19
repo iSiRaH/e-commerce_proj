@@ -6,6 +6,7 @@ const authServices = require('../services/authServices');
 const { promisify } = require('util');
 const prisma = require('../config/connectDb');
 const AppError = require('../utils/appError');
+const sendmail = require('../utils/email');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -257,12 +258,37 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   console.log('Password reset URL:', resetUrl); //TEST
 
-  res.status(200).json({
-    status: 'success',
-    message,
-    resetUrl, //TEST
-  });
-  //IMPLEMENT: sent reset token to user's email using email service (e.g., nodemailer)
+  try {
+    await sendmail({
+      email: user.email,
+      subject: 'Your password reset token (valid for 10 minutes)',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email!',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        passwordResetToken: undefined,
+        passwordResetExpires: undefined,
+      },
+    });
+
+    return next(
+      new AppError(
+        'There was an error sending the email. Try again later!',
+        500
+      )
+    );
+  }
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
