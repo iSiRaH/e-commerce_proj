@@ -1,9 +1,23 @@
 const prisma = require('../config/connectDb');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const AppError = require('../utils/appError');
 
-const comparePasswords = async (inputtedPassword, storedHashedPassword) => {
+exports.comparePasswords = async (inputtedPassword, storedHashedPassword) => {
   return await bcrypt.compare(inputtedPassword, storedHashedPassword);
+};
+
+exports.isChangePasswordAfter = (JWTTimeStamp) => {
+  if (this.passwordChangedAt) {
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    console.log('JWTTimeStamp:', JWTTimeStamp);
+    console.log('changedTimeStamp:', changedTimeStamp);
+    return JWTTimeStamp < changedTimeStamp;
+  }
+  return false;
 };
 
 exports.createUser = async (userData, next) => {
@@ -50,11 +64,27 @@ exports.validateUser = async (email, password) => {
     return null;
   }
 
-  const isPasswordValid = await comparePasswords(password, user.password);
+  if (user.isActive !== 'ACTIVE') {
+    return null;
+  }
+
+  const isPasswordValid = await this.comparePasswords(password, user.password);
 
   if (!isPasswordValid) {
     return null;
   }
 
   return user;
+};
+
+exports.createPasswordResetToken = () => {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  
+  const passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  const passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+  return { resetToken, passwordResetToken, passwordResetExpires };
 };
