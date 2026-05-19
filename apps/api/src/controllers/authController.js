@@ -252,7 +252,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     },
   });
 
-  const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/auth/resetPassword/${resetToken}`;
+  const appBaseUrl = process.env.APP_BASE_URL;
+  if (!appBaseUrl) {
+    return next(
+      new AppError('APP_BASE_URL is not configured for password reset links.', 500)
+    );
+  }
+
+  const resetUrl = new URL(
+    `/api/v1/auth/resetPassword/${resetToken}`,
+    appBaseUrl
+  ).toString();
 
   const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}. \nIf you didn't forget your password, please ignore this email!`;
 
