@@ -80,4 +80,4 @@ e-commerce/
  git clone https://github.com/your-username/e-commerce.git
  cd e-commerce
  pnpm install
- pnpm  dev
+ pnpm dev
