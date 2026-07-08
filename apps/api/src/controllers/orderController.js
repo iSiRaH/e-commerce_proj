@@ -8,11 +8,18 @@ const safeFields = {
   orderItems: {
     select: {
       id: true,
-      name: true,
-      slug: true,
+      quantity: true,
       price: true,
       discount: true,
-      thumbnail: true,
+      total: true,
+      product: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          thumbnail: true,
+        },
+      },
     },
   },
   totalAmount: true,
@@ -58,18 +65,37 @@ exports.createOrder = catchAsync(async (req, res, next) => {
     return next(new AppError('No user found with that ID', 404));
   }
 
-  // Extract product IDs to connect if provided
-  const { productIds, ...orderData } = req.body;
+  // Extract product IDs or order items to connect if provided
+  const { productIds, orderItems, ...orderData } = req.body;
 
   const createData = {
     ...orderData,
     userId: Number(userId),
   };
 
-  // Connect existing products to the order if productIds are provided
-  if (productIds && Array.isArray(productIds)) {
+  if (orderItems && Array.isArray(orderItems)) {
     createData.orderItems = {
-      connect: productIds.map((id) => ({ id: Number(id) })),
+      create: orderItems.map((item) => ({
+        productId: Number(item.productId || item.id),
+        quantity: Number(item.quantity || 1),
+        price: Number(item.price || 0),
+        discount: item.discount !== undefined ? Number(item.discount) : 0,
+        total: Number(item.total || (item.quantity || 1) * (item.price || 0)),
+      })),
+    };
+  } else if (productIds && Array.isArray(productIds)) {
+    // Fallback: Fetch product details to construct OrderItems
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds.map(Number) } },
+    });
+    createData.orderItems = {
+      create: products.map((product) => ({
+        productId: product.id,
+        quantity: 1,
+        price: product.price,
+        discount: product.discount || 0,
+        total: product.price - (product.discount || 0),
+      })),
     };
   }
 
@@ -159,12 +185,41 @@ exports.updateOrder = catchAsync(async (req, res, next) => {
     return next(new AppError('No order found with that ID', 404));
   }
 
-  const { productIds, ...updateData } = req.body;
+  const { productIds, orderItems, ...updateData } = req.body;
 
   // Handle product connections if provided
-  if (productIds && Array.isArray(productIds)) {
+  if (orderItems && Array.isArray(orderItems)) {
+    // Delete existing order items and create new ones
+    await prisma.orderItem.deleteMany({
+      where: { orderId: Number(req.params.id) },
+    });
+
     updateData.orderItems = {
-      set: productIds.map((id) => ({ id: Number(id) })),
+      create: orderItems.map((item) => ({
+        productId: Number(item.productId || item.id),
+        quantity: Number(item.quantity || 1),
+        price: Number(item.price || 0),
+        discount: item.discount !== undefined ? Number(item.discount) : 0,
+        total: Number(item.total || (item.quantity || 1) * (item.price || 0)),
+      })),
+    };
+  } else if (productIds && Array.isArray(productIds)) {
+    await prisma.orderItem.deleteMany({
+      where: { orderId: Number(req.params.id) },
+    });
+
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds.map(Number) } },
+    });
+
+    updateData.orderItems = {
+      create: products.map((product) => ({
+        productId: product.id,
+        quantity: 1,
+        price: product.price,
+        discount: product.discount || 0,
+        total: product.price - (product.discount || 0),
+      })),
     };
   }
 
