@@ -5,6 +5,11 @@ const morgan = require('morgan');
 const healthCheckRouter = require('./routes/healthCheck');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
@@ -27,6 +32,11 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/v1/health', healthCheckRouter);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/carts', cartRoutes);
 
 app.use(globalErrorHandler);
 
