@@ -7,12 +7,9 @@ exports.comparePasswords = async (inputtedPassword, storedHashedPassword) => {
   return await bcrypt.compare(inputtedPassword, storedHashedPassword);
 };
 
-exports.isChangePasswordAfter = (JWTTimeStamp) => {
-  if (this.passwordChangedAt) {
-    const changedTimeStamp = parseInt(
-      this.passwordChangedAt.getTime() / 1000,
-      10
-    );
+exports.isChangePasswordAfter = (passwordChangedAt, JWTTimeStamp) => {
+  if (passwordChangedAt) {
+    const changedTimeStamp = parseInt(passwordChangedAt.getTime() / 1000, 10);
     console.log('JWTTimeStamp:', JWTTimeStamp);
     console.log('changedTimeStamp:', changedTimeStamp);
     return JWTTimeStamp < changedTimeStamp;
@@ -68,7 +65,10 @@ exports.validateUser = async (email, password) => {
     return null;
   }
 
-  const isPasswordValid = await this.comparePasswords(password, user.password);
+  const isPasswordValid = await exports.comparePasswords(
+    password,
+    user.password
+  );
 
   if (!isPasswordValid) {
     return null;
@@ -79,7 +79,7 @@ exports.validateUser = async (email, password) => {
 
 exports.createPasswordResetToken = () => {
   const resetToken = crypto.randomBytes(32).toString('hex');
-  
+
   const passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
