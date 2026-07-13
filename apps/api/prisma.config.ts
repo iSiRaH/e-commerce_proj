@@ -18,6 +18,7 @@ export default defineConfig({
   schema: 'prisma/schema',
   migrations: {
     path: 'prisma/migrations',
+    seed: 'node prisma/seed.js',
   },
   datasource: {
     url: ENCODED_DATABASE_URL,
