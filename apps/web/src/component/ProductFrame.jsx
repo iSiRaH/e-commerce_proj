@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import {
   ShoppingCart,
   Heart,
@@ -6,161 +5,195 @@ import {
   Star,
   Sparkles,
   BadgeCheck,
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { useCart } from '../context/CartContext';
+import { useProducts } from '../context/ProductContext';
 
 export default function ProductCard({ text, product: customProduct, isCategory = false }) {
   const [wishlist, setWishlist] = useState(false);
+  const { addToCart } = useCart();
+  const { openProductDetail } = useProducts();
 
-  // Default product data
-  const defaultProduct = {
-    id: 1,
-    name: "Premium Wireless Headphones",
-    price: 129.99,
-    originalPrice: 169.99,
-    discount: 25,
-    rating: 4.8,
-    reviews: 324,
-    image:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1200&auto=format&fit=crop",
-    isBestseller: true,
-    isNew: true,
-  };
-
-  const product = customProduct || defaultProduct;
-
-  // Render category frame
+  // Render category frame fallback
   if (isCategory) {
     return (
-      <div className="rounded-lg bg-[#ebd9d1] px-4 py-3 text-center font-semibold text-gray-800 shadow-md hover:shadow-lg transition cursor-pointer">
+      <div className="rounded-xl bg-[#ebd9d1] px-4 py-3 text-center font-bold text-slate-800 shadow-sm hover:shadow-md hover:bg-[#dfc3b7] transition cursor-pointer">
         {text}
       </div>
     );
   }
 
+  // Default product data fallback
+  const defaultProduct = {
+    id: 1,
+    name: 'Premium Wireless Headphones',
+    price: 129.99,
+    discount: 25,
+    rating: 4.8,
+    reviews: 324,
+    thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1200&auto=format&fit=crop',
+    brand: 'AudioTech',
+    category: 'Audio',
+    stockQty: 50,
+    isBestseller: true,
+    isNew: true,
+  };
+
+  const product = customProduct || defaultProduct;
+  const imageSrc = product.thumbnail || product.image || defaultProduct.thumbnail;
+  const calculatedOriginalPrice =
+    product.originalPrice ||
+    (product.discount
+      ? (product.price / (1 - product.discount / 100)).toFixed(2)
+      : product.price);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.4 }}
-      className="group overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-md transition-all duration-300 hover:shadow-2xl"
+      viewport={{ once: true }}
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.3 }}
+      className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-md transition-all duration-300 hover:shadow-xl hover:border-[#b87c4c]/40"
     >
-      <Link to={`/product/${product.id}`}>
-        {/* Image Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-orange-50 to-amber-100 aspect-[4/5]">
-          {/* Product Image */}
+      <div>
+        {/* Image & Action Overlay */}
+        <div
+          onClick={() => openProductDetail(product)}
+          className="relative overflow-hidden bg-slate-100 aspect-[4/4] cursor-pointer"
+        >
           <img
-            src={product.image}
+            src={imageSrc}
             alt={product.name}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
           />
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/5 opacity-0 transition duration-300 group-hover:opacity-100"></div>
+          {/* Hover Overlay */}
+          <div className="absolute inset-0 bg-black/10 opacity-0 transition duration-300 group-hover:opacity-100" />
 
-          {/* Badges */}
-          <div className="absolute left-4 top-4 flex flex-col gap-2">
-            {product.discount && (
-              <span className="rounded-full bg-orange-600 px-3 py-1 text-xs font-semibold text-white shadow-lg">
+          {/* Badges on Top-Left */}
+          <div className="absolute left-3 top-3 flex flex-col gap-1.5 z-10">
+            {product.discount > 0 && (
+              <span className="rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] font-extrabold text-white shadow-md">
                 -{product.discount}% OFF
               </span>
             )}
 
             {product.isBestseller && (
-              <span className="flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-                <Sparkles size={14} />
+              <span className="flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
+                <Sparkles size={11} />
                 Bestseller
               </span>
             )}
 
             {product.isNew && (
-              <span className="rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white shadow-lg">
-                New Arrival
+              <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
+                New
               </span>
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 transition duration-300 group-hover:opacity-100">
+          {/* Action Buttons Top-Right */}
+          <div className="absolute right-3 top-3 flex flex-col gap-2 z-10 opacity-90 sm:opacity-0 transition duration-300 group-hover:opacity-100">
             {/* Wishlist */}
             <button
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation();
                 setWishlist(!wishlist);
               }}
-              className={`flex h-11 w-11 items-center justify-center rounded-2xl shadow-lg backdrop-blur-md transition ${
-                wishlist
-                  ? "bg-orange-600 text-white"
-                  : "bg-white/80 text-gray-700"
+              title="Add to Wishlist"
+              className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-md backdrop-blur-md transition ${
+                wishlist ? 'bg-rose-600 text-white' : 'bg-white/90 text-slate-700 hover:bg-white'
               }`}
             >
-              <Heart
-                className={`${wishlist ? "fill-current" : ""}`}
-                size={20}
-              />
+              <Heart className={wishlist ? 'fill-current' : ''} size={17} />
             </button>
 
             {/* Quick View */}
-            <button className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/80 text-gray-700 shadow-lg backdrop-blur-md transition hover:bg-white">
-              <Eye size={20} />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openProductDetail(product);
+              }}
+              title="Quick View"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-700 shadow-md backdrop-blur-md transition hover:bg-white hover:text-[#b87c4c]"
+            >
+              <Eye size={17} />
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col p-5">
-          {/* Rating */}
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, index) => (
-                <Star
-                  key={index}
-                  size={16}
-                  className={
-                    index < Math.floor(product.rating)
-                      ? "fill-orange-500 text-orange-500"
-                      : "text-gray-300"
-                  }
-                />
-              ))}
-
-              <span className="ml-1 text-sm text-gray-500">
-                ({product.reviews})
-              </span>
-            </div>
-
-            <BadgeCheck className="text-emerald-600" size={20} />
+        {/* Content Section */}
+        <div className="flex flex-col p-4">
+          {/* Brand & Category */}
+          <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium mb-1.5">
+            <span className="uppercase tracking-wider font-semibold text-[#8da588]">
+              {product.brand || 'TouchIT'}
+            </span>
+            <span className="text-slate-400 truncate max-w-[100px]">{product.category}</span>
           </div>
 
           {/* Product Name */}
-          <h3 className="mb-4 line-clamp-2 text-lg font-semibold text-gray-800">
+          <h3
+            onClick={() => openProductDetail(product)}
+            className="mb-2 line-clamp-2 text-sm sm:text-base font-bold text-slate-800 hover:text-[#b87c4c] transition cursor-pointer min-h-[2.5rem]"
+          >
             {product.name}
           </h3>
 
-          {/* Price */}
-          <div className="mb-5 flex items-center gap-3">
-            <span className="text-2xl font-bold text-gray-900">
-              ${product.price}
-            </span>
+          {/* Rating */}
+          <div className="mb-3 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1">
+              <Star size={14} className="fill-amber-400 text-amber-400" />
+              <span className="font-bold text-slate-700">{product.rating || 4.7}</span>
+              <span className="text-slate-400">({product.reviews || 120})</span>
+            </div>
 
-            <span className="text-sm text-gray-400 line-through">
-              ${product.originalPrice}
-            </span>
+            {product.stockQty && product.stockQty <= 20 ? (
+              <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">
+                Only {product.stockQty} left
+              </span>
+            ) : (
+              <span className="flex items-center gap-0.5 text-[10px] text-emerald-700 font-medium">
+                <BadgeCheck size={13} className="text-emerald-600" />
+                In Stock
+              </span>
+            )}
           </div>
 
-          {/* Button */}
-          <motion.button
-            whileTap={{ scale: 0.96 }}
-            whileHover={{ scale: 1.02 }}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 px-5 py-4 font-semibold text-white shadow-lg transition hover:shadow-xl"
-          >
-            <ShoppingCart size={20} />
-            Add to Cart
-          </motion.button>
+          {/* Price */}
+          <div className="mb-3 flex items-baseline gap-2">
+            <span className="text-xl font-black text-slate-900">
+              ${Number(product.price).toFixed(2)}
+            </span>
+
+            {product.discount > 0 && (
+              <span className="text-xs text-slate-400 line-through">
+                ${calculatedOriginalPrice}
+              </span>
+            )}
+          </div>
         </div>
-      </Link>
+      </div>
+
+      {/* Add To Cart Button */}
+      <div className="px-4 pb-4">
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            addToCart(product);
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#ebd9d1] hover:bg-[#b87c4c] hover:text-white py-2.5 px-3 text-xs sm:text-sm font-bold text-slate-800 transition-colors shadow-sm"
+        >
+          <ShoppingCart size={16} />
+          <span>Add to Cart</span>
+        </motion.button>
+      </div>
     </motion.div>
   );
 }
