@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Lock, Mail, User, MapPin, Phone, Shield, Store, ShoppingBag } from 'lucide-react';
+import {
+  X,
+  Lock,
+  Mail,
+  User,
+  MapPin,
+  Phone,
+  Shield,
+  Store,
+  ShoppingBag,
+  Eye,
+  EyeOff,
+  AlertCircle,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProducts } from '../context/ProductContext';
 
@@ -10,10 +23,13 @@ export default function AuthModal() {
   const navigate = useNavigate();
 
   const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
+    passwordConfirm: '',
     address: '',
     phone: '',
     role: 'CUSTOMER', // 'CUSTOMER' | 'SELLER'
@@ -22,32 +38,76 @@ export default function AuthModal() {
 
   if (activeModal !== 'auth') return null;
 
+  const navigateByRole = (userRole) => {
+    if (userRole === 'ADMIN') navigate('/admin');
+    else if (userRole === 'SELLER') navigate('/seller');
+    else navigate('/');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    if (mode === 'login') {
-      const user = await login(formData.email, formData.password);
-      if (user) {
-        closeModals();
-        navigate('/');
+    setErrorMsg('');
+
+    if (mode === 'register') {
+      if (formData.password.length < 6) {
+        setErrorMsg('Password must be at least 6 characters long.');
+        return;
       }
-    } else {
-      const user = await register(formData);
-      if (user) {
-        closeModals();
-        navigate('/');
+      if (formData.password !== formData.passwordConfirm) {
+        setErrorMsg('Passwords do not match. Please re-enter.');
+        return;
       }
     }
-    setIsSubmitting(false);
+
+    setIsSubmitting(true);
+    try {
+      if (mode === 'login') {
+        const user = await login(formData.email.trim(), formData.password);
+        if (user) {
+          closeModals();
+          navigateByRole(user.role);
+        } else {
+          setErrorMsg('Authentication failed. Please check your email and password.');
+        }
+      } else {
+        const user = await register({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          passwordConfirm: formData.passwordConfirm,
+          role: formData.role,
+          address: formData.address.trim(),
+          phone: formData.phone.trim(),
+        });
+        if (user) {
+          closeModals();
+          navigateByRole(user.role);
+        } else {
+          setErrorMsg('Registration failed. The email may already be in use.');
+        }
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Operation failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRoleQuickLogin = async (email, password = 'password123') => {
+    setErrorMsg('');
     setIsSubmitting(true);
-    const user = await login(email, password);
-    setIsSubmitting(false);
-    if (user) {
-      closeModals();
-      navigate('/');
+    try {
+      const user = await login(email, password);
+      if (user) {
+        closeModals();
+        navigateByRole(user.role);
+      } else {
+        setErrorMsg('Quick login failed. Backend may still be processing.');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Quick login failed.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,6 +152,13 @@ export default function AuthModal() {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-3.5">
+          {errorMsg && (
+            <div className="flex items-start gap-2 p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-xl animate-in fade-in">
+              <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
           {mode === 'register' && (
             <>
               {/* Role Selection */}
@@ -178,38 +245,81 @@ export default function AuthModal() {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Password
+              Password {mode === 'register' && <span className="text-slate-400 font-normal">(min 6 chars)</span>}
             </label>
             <div className="relative">
               <Lock size={16} className="absolute left-3 top-3 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b87c4c]"
+                className="w-full pl-9 pr-10 py-2 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b87c4c]"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </div>
 
           {mode === 'register' && (
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Address
-              </label>
-              <div className="relative">
-                <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
-                <input
-                  type="text"
-                  required
-                  placeholder="Street Address, City"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b87c4c]"
-                />
+            <>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3 top-3 text-slate-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="••••••••"
+                    value={formData.passwordConfirm}
+                    onChange={(e) => setFormData({ ...formData, passwordConfirm: e.target.value })}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b87c4c]"
+                  />
+                </div>
               </div>
-            </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Phone size={16} className="absolute left-3 top-3 text-slate-400" />
+                    <input
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b87c4c]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    City / Address
+                  </label>
+                  <div className="relative">
+                    <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="e.g. Austin, TX"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b87c4c]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           <button
@@ -217,7 +327,7 @@ export default function AuthModal() {
             disabled={isSubmitting}
             className="w-full bg-[#b87c4c] hover:bg-[#9b643a] disabled:opacity-50 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow mt-2"
           >
-            {isSubmitting ? 'Authenticating...' : mode === 'login' ? 'Sign In to TouchIT' : 'Register Account'}
+            {isSubmitting ? 'Authenticating with Backend...' : mode === 'login' ? 'Sign In to TouchIT' : 'Register Account'}
           </button>
         </form>
 

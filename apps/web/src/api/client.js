@@ -33,15 +33,15 @@ const getAuthHeaders = () => {
   const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
   return {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token && (token.startsWith('eyJ') || token.length > 20) ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
 
-// Request with graceful fallback
+// Request with clean error reporting and fallback
 async function request(endpoint, options = {}, fallbackFn) {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
@@ -58,9 +58,23 @@ async function request(endpoint, options = {}, fallbackFn) {
       const data = await res.json();
       return data;
     }
-    throw new Error(`API responded with status ${res.status}`);
+
+    // Extract detailed error message from backend if available
+    let errorMsg = `Server error (${res.status})`;
+    try {
+      const errJson = await res.json();
+      if (errJson && errJson.message) {
+        errorMsg = errJson.message;
+      }
+    } catch (_) {}
+
+    const apiErr = new Error(errorMsg);
+    apiErr.status = res.status;
+    throw apiErr;
   } catch (err) {
-    if (fallbackFn) {
+    // Only fall back to local mock data if the server is completely unreachable (offline/network failure)
+    // Never fall back if the backend explicitly returned a 4xx client/validation error
+    if (fallbackFn && (err.name === 'AbortError' || err.message.includes('Failed to fetch') || !err.status)) {
       return fallbackFn();
     }
     throw err;
@@ -166,53 +180,32 @@ export const api = {
 
   // --- AUTH ---
   auth: {
-    login: ({ email, password }) =>
-      request(
-        '/auth/login',
-        {
-          method: 'POST',
-          body: JSON.stringify({ email, password }),
-        },
-        () => {
-          let role = 'CUSTOMER';
-          if (email.toLowerCase().includes('admin')) role = 'ADMIN';
-          else if (email.toLowerCase().includes('seller')) role = 'SELLER';
+    login: async ({ email, password }) => {
+      return await request('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+    },
 
-          const user = {
-            id: role === 'ADMIN' ? 3 : role === 'SELLER' ? 2 : 1,
-            email,
-            name: email.split('@')[0],
-            role,
-            address: '742 Evergreen Terrace, Springfield, OR',
-            phone: '+1 (555) 382-9104',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop',
-          };
-          return { status: 'success', token: `jwt-${Date.now()}`, data: { user } };
-        }
-      ),
+    register: async (userData) => {
+      return await request('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...userData,
+          passwordConfirm: userData.passwordConfirm || userData.password,
+        }),
+      });
+    },
 
-    register: (userData) =>
-      request(
-        '/auth/register',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            ...userData,
-            passwordConfirm: userData.password,
-          }),
-        },
-        () => {
-          const newUser = {
-            id: Date.now(),
-            role: userData.role || 'CUSTOMER',
-            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=300&auto=format&fit=crop',
-            ...userData,
-          };
-          return { status: 'success', token: `jwt-${Date.now()}`, data: { user: newUser } };
-        }
-      ),
+    getMe: async () => {
+      return await request('/auth/me');
+    },
 
-    getMe: () => request('/auth/me'),
+    logout: async () => {
+      return await request('/auth/logout', {
+        method: 'POST',
+      });
+    },
   },
 
   // --- USERS ---

@@ -18,7 +18,7 @@ const createSendToken = (user, statusCode, res) => {
 
   const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 90) * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
   };
@@ -27,20 +27,24 @@ const createSendToken = (user, statusCode, res) => {
 
   res.cookie('jwt', token, cookieOptions);
 
-  user.password = undefined;
+  // Clone user object to safely remove sensitive credentials without mutating the database/memory store
+  const safeUser = { ...user };
+  delete safeUser.password;
+  delete safeUser.passwordResetToken;
+  delete safeUser.passwordResetExpires;
 
   res.status(statusCode).json({
     status: 'success',
     token,
     data: {
-      user,
+      user: safeUser,
     },
   });
 };
 
 // REGISTER
 exports.register = catchAsync(async (req, res, next) => {
-  const createdUser = await authServices.createUser(req.body, next);
+  const createdUser = await authServices.createUser(req.body);
   createSendToken(createdUser, 201, res);
 });
 

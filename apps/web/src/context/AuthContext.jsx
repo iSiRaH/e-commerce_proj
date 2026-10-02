@@ -11,34 +11,52 @@ export const AuthProvider = ({ children }) => {
   const { showToast } = useToast();
 
   useEffect(() => {
-    // Load persisted auth from localStorage
-    const savedToken = localStorage.getItem('touchit_token');
-    const savedUser = localStorage.getItem('touchit_user');
+    const initializeAuth = async () => {
+      const savedToken = localStorage.getItem('touchit_token');
+      const savedUser = localStorage.getItem('touchit_user');
 
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error('Failed to parse saved user', e);
+      // Purge any legacy fake mock tokens
+      if (savedToken && !savedToken.startsWith('eyJ')) {
+        localStorage.removeItem('touchit_token');
+        localStorage.removeItem('touchit_user');
+        setLoading(false);
+        return;
       }
-    } else {
-      // Default to demo buyer for immediate smooth experience
-      const defaultBuyer = {
-        id: 1,
-        email: 'buyer@touchit.com',
-        name: 'Alex Johnson (Buyer)',
-        role: 'CUSTOMER',
-        address: '742 Evergreen Terrace, Springfield, OR',
-        phone: '+1 (555) 382-9104',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop',
-      };
-      setUser(defaultBuyer);
-      setToken('jwt-buyer-token');
-      localStorage.setItem('touchit_user', JSON.stringify(defaultBuyer));
-      localStorage.setItem('touchit_token', 'jwt-buyer-token');
-    }
-    setLoading(false);
+
+      if (savedToken && savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          setUser(parsed);
+          setToken(savedToken);
+
+          // Verify session integrity with backend
+          try {
+            const meRes = await api.auth.getMe();
+            if (meRes?.data?.user) {
+              setUser(meRes.data.user);
+              localStorage.setItem('touchit_user', JSON.stringify(meRes.data.user));
+            }
+          } catch (verifyErr) {
+            // If token has expired or is invalid, log out cleanly
+            if (verifyErr.status === 401) {
+              setUser(null);
+              setToken(null);
+              localStorage.removeItem('touchit_token');
+              localStorage.removeItem('touchit_user');
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse saved user', e);
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('touchit_token');
+          localStorage.removeItem('touchit_user');
+        }
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email, password) => {

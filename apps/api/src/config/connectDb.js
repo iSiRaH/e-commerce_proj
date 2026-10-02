@@ -196,7 +196,7 @@ function applySelect(item, select) {
 // Fallback Model Handler
 const createModelProxy = (tableName, collection) => ({
   findMany: async (args = {}) => {
-    let items = [...collection];
+    let items = collection.map((i) => ({ ...i }));
     if (args.where) {
       items = items.filter((item) => {
         for (const [key, val] of Object.entries(args.where)) {
@@ -228,7 +228,8 @@ const createModelProxy = (tableName, collection) => ({
       return false;
     });
     if (!item) return null;
-    return args.select ? applySelect(item, args.select) : item;
+    const cloned = { ...item };
+    return args.select ? applySelect(cloned, args.select) : cloned;
   },
 
   findFirst: async (args = {}) => {
@@ -238,7 +239,9 @@ const createModelProxy = (tableName, collection) => ({
       }
       return false;
     });
-    return item ? (args.select ? applySelect(item, args.select) : item) : null;
+    if (!item) return null;
+    const cloned = { ...item };
+    return args.select ? applySelect(cloned, args.select) : cloned;
   },
 
   create: async (args = {}) => {
@@ -261,7 +264,8 @@ const createModelProxy = (tableName, collection) => ({
       }
     }
     collection.unshift(newItem);
-    return args.select ? applySelect(newItem, args.select) : newItem;
+    const cloned = { ...newItem };
+    return args.select ? applySelect(cloned, args.select) : cloned;
   },
 
   update: async (args = {}) => {
